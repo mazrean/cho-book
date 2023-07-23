@@ -6,7 +6,7 @@
 	import "uikit/dist/js/uikit-icons.min.js"
 </script>
 
-<div class="app">
+<div class="app vsc-initialized">
 	<Header />
 
 	<main>
