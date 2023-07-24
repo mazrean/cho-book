@@ -14,7 +14,7 @@
 		<nav class="uk-navbar">
 			<div class="uk-navbar-left">
 				<a href="/" class="uk-navbar-item uk-logo">重Book</a>
-					<ul class="uk-navbar-nav">
+					<ul class="uk-navbar-nav uk-visible@m">
 						<li class={$page.url.pathname === '/' ? 'uk-active' : undefined}>
 							<a href="/">Home</a>
 						</li>
@@ -30,7 +30,7 @@
 				{#if user?.image}
 					<img src={user.image} alt={user?.name}>
 				{:else}
-					<button on:click={() => signIn('github')}>Sign In with Google</button>
+					<button on:click={() => signIn('google')}>Sign In</button>
 				{/if}
 			</div>
 		</nav>
@@ -39,7 +39,7 @@
 
 <style>
 	img {
-		height: 80%;
+		height: 50%;
 		border-radius:50%;
 	}
 </style>
