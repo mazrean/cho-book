@@ -1,20 +1,29 @@
 <script lang="ts">
 	// @ts-nocheck
-
 	import BarCodeReader from "../components/BarCodeReader.svelte";
+    import { checkDigit, checkISBN } from "$lib/ts/barCode";
 
+    // カメラの権限要求タイミングを使う時まで遅らせるため
+    let modalOpen = false;
+
+    function onIsbn(e) {
+        if (!checkDigit(e.detail) || !checkISBN(e.detail)) return;
+        console.log(e.detail);
+    }
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<title>重Book</title>
+	<meta name="description" content="重Book" />
 </svelte:head>
 
-<button class="uk-button uk-button-default" type="button" uk-toggle="target: #read-modal">書籍追加</button>
+<button class="uk-button uk-button-default" type="button" on:click={()=>modalOpen=true} uk-toggle="target: #read-modal">書籍追加</button>
 
 <div id="read-modal" uk-modal>
-    <div class="uk-modal-dialog uk-modal-body">
-        <BarCodeReader />
-        <button class="uk-modal-close-default" type="button" uk-close></button>
-    </div>
+    {#if modalOpen}
+        <div class="uk-modal-dialog uk-modal-body">
+            <BarCodeReader on:isbn={onIsbn} />
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+        </div>
+    {/if}
 </div>

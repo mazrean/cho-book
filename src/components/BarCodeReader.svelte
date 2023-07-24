@@ -1,24 +1,28 @@
 <script lang="ts">
-  import { BrowserMultiFormatReader, BrowserCodeReader } from '@zxing/browser';
+  import { BrowserMultiFormatReader } from '@zxing/browser';
+	import { createEventDispatcher, onMount } from 'svelte';
+
+  const dispatcher = createEventDispatcher();
 
   let videoRef: HTMLVideoElement;
 
-  const codeReader = new BrowserMultiFormatReader()
+  const codeReader = new BrowserMultiFormatReader();
 
-  async () => {
-    const devices = await BrowserCodeReader.listVideoInputDevices()
-    if (devices.length === 0) return
-  
-    await codeReader.decodeFromVideoDevice(devices[0].deviceId, videoRef, (result, error) => {
+  onMount(async () => {
+    await codeReader.decodeFromConstraints({
+      video: {
+        facingMode: 'environment',
+      },
+    }, videoRef, (result, error) => {
       if (!result) return
       if (error) {
-        console.log('ERROR!! : ', error)
         return
       }
 
-      console.log('RESULT!! : ', result)
+      const strIsbn = result.getText();
+      dispatcher('isbn', strIsbn);
     })
-  }
+  });
 </script>
 
 <video bind:this={videoRef}></video>
