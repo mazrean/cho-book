@@ -1,6 +1,12 @@
-<script>
+<script lang="ts">
+	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { page } from '$app/stores';
-	import github from '$lib/images/github.svg';
+
+	export let user: {
+    name?: string | null | undefined;
+    email?: string | null | undefined;
+    image?: string | null | undefined;
+	}|null;
 </script>
 
 <div class="uk-navbar-container tm-navbar-container uk-sticky uk-active uk-sticky-below uk-sticky-fixed">
@@ -21,10 +27,19 @@
 					</ul>
 			</div>
 			<div class="uk-navbar-right">
-				<a href="https://github.com/sveltejs/kit">
-					<img src={github} alt="GitHub" />
-				</a>
+				{#if user?.image}
+					<img src={user.image} alt={user?.name}>
+				{:else}
+					<button on:click={() => signIn('github')}>Sign In with Google</button>
+				{/if}
 			</div>
 		</nav>
 	</header>
 </div>
+
+<style>
+	img {
+		height: 80%;
+		border-radius:50%;
+	}
+</style>

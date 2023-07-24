@@ -1,12 +1,13 @@
 <script>
+	import { page } from '$app/stores';
 	import Header from '/@/components/Header.svelte';
-	import "$lib/styles.scss"
-	import "uikit/dist/js/uikit.min.js"
-	import "uikit/dist/js/uikit-icons.min.js"
+	import '$lib/styles.scss';
+	import 'uikit/dist/js/uikit.min.js';
+	import 'uikit/dist/js/uikit-icons.min.js';
 </script>
 
 <div class="app vsc-initialized">
-	<Header />
+	<Header user={$page.data.session?.user ?? null} />
 
 	<main>
 		<slot />
