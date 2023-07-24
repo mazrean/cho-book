@@ -1,7 +1,6 @@
 <script>
 	import Header from '/@/components/Header.svelte';
-	import "$lib/styles.css";
-	import 'uikit/dist/css/uikit.min.css';
+	import "$lib/styles.scss"
 	import "uikit/dist/js/uikit.min.js"
 	import "uikit/dist/js/uikit-icons.min.js"
 </script>
