@@ -2,14 +2,21 @@
 	// @ts-nocheck
 	import BarCodeReader from "../components/BarCodeReader.svelte";
     import { checkDigit, checkISBN } from "$lib/ts/barCode";
+    import type { Book } from "$lib/ts/book";
 
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    function onIsbn(e) {
-        if (!checkDigit(e.detail) || !checkISBN(e.detail)) return;
-        console.log(e.detail);
+    const books = new Map<string, Book>();
+    async function onIsbn(e) {
+        if (!checkDigit(e.detail) || !checkISBN(e.detail) || books.has(e.detail)) return;
+
+        const res = await fetch(`/api/books/${e.detail}`)
+        const json: Book = await res.json();
+        books.set(json.isbn, json);
     }
+
+    $: console.log(books);
 </script>
 
 <svelte:head>
