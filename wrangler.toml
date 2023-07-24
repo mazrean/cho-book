@@ -1,0 +1,13 @@
+name = "cho-book"
+account_id = "bbd5aea1ec9f622347ed15a67fcfd99d"
+
+main = "./.cloudflare/worker.js"
+site.bucket = "./.cloudflare/public"
+
+build.command = "npm run build"
+
+[[ d1_databases ]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "cho_book"
+database_id = "6716443e-9edf-4518-94f2-10919c8efaca"
+preview_database_id = "c6593333-97a8-4446-b29c-e5f94cbeb176"

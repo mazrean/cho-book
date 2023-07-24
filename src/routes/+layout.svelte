@@ -9,7 +9,7 @@
 <div class="app vsc-initialized">
 	<Header user={$page.data.session?.user ?? null} />
 
-	<main>
+	<main class="uk-align-center">
 		<slot />
 	</main>
 </div>
