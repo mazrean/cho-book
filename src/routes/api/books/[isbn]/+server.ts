@@ -5,9 +5,13 @@ import type { Book } from '/@/lib/types/book';
 export async function GET({ params }) {
 	const isbn = params.isbn;
 
-	const issPromise = fetch(
-		`https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn=${isbn}&maximumRecords=1`
-	).then(async (res) => {
+	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
+	const issPromise = Promise.all([
+		fetch(
+			`https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn=${isbn}&maximumRecords=1`
+		),
+		fetch(issImgUrl)
+	]).then(async ([res, imgRes]) => {
 		const parser = new XMLParser();
 		const xml = parser.parse(await res.text());
 
@@ -20,7 +24,7 @@ export async function GET({ params }) {
 		const title = record['dc:title'];
 		const author = record['dc:creator'];
 		const publisher = record['dc:publisher'];
-		const imgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
+		const imgUrl = imgRes.ok ? issImgUrl : null;
 
 		return { title, author, publisher, imgUrl };
 	});
@@ -42,13 +46,13 @@ export async function GET({ params }) {
 
 	const openbdPromise = fetch(`https://api.openbd.jp/v1/get?isbn=${isbn}`).then(async (res) => {
 		const json = await res.json();
-		if (json[0] === null) return null;
+		if (json.length === 0 || json[0] === null) return null;
 
 		const item = json[0].summary;
 		const title = item.title;
 		const author = item.author;
 		const publisher = item.publisher;
-		const imgUrl = `https://cover.openbd.jp/${isbn}.jpg`;
+		const imgUrl = item.cover;
 
 		return { title, author, publisher, imgUrl };
 	});
@@ -67,11 +71,12 @@ export async function GET({ params }) {
 		i++;
 
 		if (res) {
-			book.title ??= res.title;
-			book.author ??= res.author;
-			book.publisher ??= res.publisher;
-			book.imgUrl ??= res.imgUrl;
+			book.title ||= res.title || null;
+			book.author ||= res.author || null;
+			book.publisher ||= res.publisher || null;
+			book.imgUrl ||= res.imgUrl || null;
 		}
+		console.log(book);
 	}
 
 	return json(book);

@@ -3,20 +3,19 @@
 	import BarCodeReader from "../components/BarCodeReader.svelte";
     import { checkDigit, checkISBN } from "$lib/ts/barCode";
     import type { Book } from "$lib/ts/book";
+	import Books from "../components/Books.svelte";
 
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    const books = new Map<string, Book>();
+    let books = new Map<string, Book>();
     async function onIsbn(e) {
         if (!checkDigit(e.detail) || !checkISBN(e.detail) || books.has(e.detail)) return;
 
         const res = await fetch(`/api/books/${e.detail}`)
         const json: Book = await res.json();
-        books.set(json.isbn, json);
+        books = books.set(json.isbn, json);
     }
-
-    $: console.log(books);
 </script>
 
 <svelte:head>
@@ -30,6 +29,7 @@
     {#if modalOpen}
         <div class="uk-modal-dialog uk-modal-body">
             <BarCodeReader on:isbn={onIsbn} />
+            <Books books={[...books.values()].reverse()} withBadge={true} />
             <button class="uk-modal-close-default" type="button" uk-close></button>
         </div>
     {/if}
