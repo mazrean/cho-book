@@ -35,6 +35,7 @@
 	"dependencies": {
 		"@auth/core": "^0.10.0",
 		"@auth/sveltekit": "^0.3.6",
+		"@zxing/browser": "^0.1.4",
 		"uikit": "^3.16.22"
 	}
 }
