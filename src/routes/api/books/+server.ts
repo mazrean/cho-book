@@ -11,7 +11,7 @@ export async function POST({ locals, platform, request }) {
 		return new Response(null, { status: 401 });
 	}
 
-	const { books }: { books: Book[] } = await request.json();
+	const books: Book[] = await request.json();
 	if (!books) {
 		return new Response(null, { status: 400 });
 	}
@@ -19,7 +19,8 @@ export async function POST({ locals, platform, request }) {
 	const db = platform?.env.DB;
 
 	// TODO: 他の人が登録した本を上書きしてしまう可能性があるのでだいぶ不味い挙動だが、時間がないので一旦許容
-	let query = 'INSERT OR REPLACE INTO books (isbn, title, author, publisher, imgUrl) VALUES ';
+	let query =
+		'INSERT OR REPLACE INTO `books` (`isbn`, `title`, `author`, `publisher`, `img_url`) VALUES ';
 	for (const book of books) {
 		query += `(?, ?, ?, ?, ?)`;
 
@@ -38,7 +39,7 @@ export async function POST({ locals, platform, request }) {
 		book.imgUrl
 	]);
 
-	const info = await preparedDB.bind(...queryParams, userEmail).run();
+	const info = await preparedDB.bind(...queryParams).run();
 	if (!info?.success) return new Response('failed to insert books', { status: 500 });
 
 	query = 'INSERT INTO user_book_relations (user_email, book_isbn) VALUES ';
@@ -50,6 +51,7 @@ export async function POST({ locals, platform, request }) {
 		}
 	}
 
+	console.log(query);
 	const preparedDB2 = db.prepare(query);
 
 	const queryParams2 = books.flatMap((book) => [userEmail, book.isbn]);
@@ -75,7 +77,7 @@ export async function GET({ locals, platform }) {
 
 	const { results: books }: { results: Book[] } = await db
 		.prepare(
-			'SELECT * FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ?'
+			'SELECT * FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY books.created_at DESC'
 		)
 		.bind(userEmail)
 		.all();

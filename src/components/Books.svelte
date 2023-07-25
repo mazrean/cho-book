@@ -2,7 +2,9 @@
 	import type { Book } from "/@/lib/types/book";
 
   export let books: Book[];
-  export let withBadge: boolean = false;
+  export let nowBooks: Book[]|null = null;
+
+  const nowBookMap = nowBooks ? new Map(books.map((book) => [book.isbn, book])) : null;
 </script>
 
 {#each books as book}
@@ -13,8 +15,8 @@
     <div>
       <h3 class="title uk-card-title">{book.title}</h3>
       <p>{book.author}</p>
-      {#if withBadge}
-        <span class="uk-label uk-label-success">未所持</span>
+      {#if nowBookMap}
+        <span class="uk-label {nowBookMap.has(book.isbn)?"uk-label-danger":"uk-label-success"}">{nowBookMap.has(book.isbn)?"所持":"未所持"}</span>
       {/if}
     </div>
   </div>

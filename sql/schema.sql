@@ -6,7 +6,7 @@ CREATE TABLE `books` (
   `title` varchar(255),
   `author` varchar(255),
   `publisher` varchar(255),
-  `image_url` varchar(255),
+  `img_url` varchar(255),
   `created_at` datetime NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
   PRIMARY KEY (`isbn`)
 );

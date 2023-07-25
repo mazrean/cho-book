@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { signIn, signOut } from '@auth/sveltekit/client';
-	import { page } from '$app/stores';
 
 	export let user: {
     name?: string | null | undefined;
@@ -18,8 +16,6 @@
 			<div class="uk-navbar-right">
 				{#if user?.image}
 					<img src={user.image} alt={user?.name}>
-				{:else}
-					<button on:click={() => signIn('google')}>Sign In</button>
 				{/if}
 			</div>
 		</nav>
