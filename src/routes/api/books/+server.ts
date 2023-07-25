@@ -51,7 +51,6 @@ export async function POST({ locals, platform, request }) {
 		}
 	}
 
-	console.log(query);
 	const preparedDB2 = db.prepare(query);
 
 	const queryParams2 = books.flatMap((book) => [userEmail, book.isbn]);
@@ -75,14 +74,38 @@ export async function GET({ locals, platform }) {
 
 	const db = platform?.env.DB;
 
-	const { results: books }: { results: Book[] } = await db
+	const {
+		results: books
+	}: {
+		results: {
+			isbn: string;
+			title: string;
+			author: string;
+			publisher: string;
+			img_url: string;
+			created_at: string;
+		}[];
+	} = await db
 		.prepare(
-			'SELECT * FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY books.created_at DESC'
+			'SELECT books.* FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY books.created_at DESC'
 		)
 		.bind(userEmail)
 		.all();
 
-	return new Response(JSON.stringify({ books }), {
-		status: 200
-	});
+	return new Response(
+		JSON.stringify({
+			books: books.map((book) => {
+				return {
+					isbn: book.isbn,
+					title: book.title,
+					author: book.author,
+					publisher: book.publisher,
+					imgUrl: book.img_url
+				} as Book;
+			})
+		}),
+		{
+			status: 200
+		}
+	);
 }

@@ -76,7 +76,9 @@ export async function GET({ params }) {
 			book.publisher ||= res.publisher || null;
 			book.imgUrl ||= res.imgUrl || null;
 		}
-		console.log(book);
+	}
+	if (!book.title) {
+		return new Response('no book', { status: 404 });
 	}
 
 	return json(book);

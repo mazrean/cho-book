@@ -10,15 +10,17 @@
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    let myBooks = fetch("/api/books").then((res) => res.json() as {books:Book[]});
-
-    console.log($page.data);
+    let myBooks = fetch("/api/books").then((res) => {
+        return res.json() as {books:Book[]};
+    });
 
     let books = new Map<string, Book>();
     async function onIsbn(e) {
         if (!checkDigit(e.detail) || !checkISBN(e.detail) || books.has(e.detail)) return;
 
         const res = await fetch(`/api/books/${e.detail}`)
+        if (!res.ok) return;
+
         const json: Book = await res.json();
         books = books.set(json.isbn, json);
     }
@@ -46,18 +48,22 @@
 {#if $page.data.session?.user?.name}
     <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true} uk-toggle="target: #read-modal">書籍追加</button>
     {#await myBooks}
-        <div uk-spinner></div>
+        <div class="uk-align-center" uk-spinner="ratio:3"></div>
     {:then books}
-        <Books books={books.books.reverse()} withBadge={false} />
+        <Books books={[...books.books.values()].reverse()} />
     {/await}
 
     <div id="read-modal" uk-modal>
         {#if modalOpen}
-            <div class="uk-modal-dialog uk-modal-body uk-align-center">
+            <div class="uk-modal-dialog uk-modal-body uk-align-center ">
                 <p>バーコードをかざしてください</p><br>
-                <BarCodeReader on:isbn={onIsbn} />
-                <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={submit} uk-toggle="target: #read-modal">追加</button>
-                <Books books={[...books.values()].reverse()} withBadge={true} />
+                <BarCodeReader on:isbn={onIsbn} /><br>
+                <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0} type="button" on:click={submit} uk-toggle="target: #read-modal">追加</button>
+                {#await myBooks}
+                <Books books={[...books.values()].reverse()} />
+                {:then nowBooks}
+                <Books books={[...books.values()].reverse()} nowBooks={nowBooks.books} />
+                {/await}
                 <button class="uk-modal-close-default" type="button" uk-close></button>
             </div>
         {/if}

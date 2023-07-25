@@ -2,9 +2,9 @@
 	import type { Book } from "/@/lib/types/book";
 
   export let books: Book[];
-  export let nowBooks: Book[]|null = null;
+  export let nowBooks: (Book[] | null) = null;
 
-  const nowBookMap = nowBooks ? new Map(books.map((book) => [book.isbn, book])) : null;
+  let nowBookMap = nowBooks ? new Map(nowBooks.map((book) => [book.isbn, book])) : null;
 </script>
 
 {#each books as book}
@@ -12,9 +12,11 @@
     {#if book.imgUrl}
       <img class="uk-img" src={book.imgUrl ?? ""} alt={book.title}>
     {/if}
-    <div>
-      <h3 class="title uk-card-title">{book.title}</h3>
-      <p>{book.author}</p>
+    <div class="right-container">
+      <h3 class="title uk-card-title uk-text-lead">{book.title}</h3>
+      {#if book.author}
+        <p class="author uk-text-meta">{book.author}</p>
+      {/if}
       {#if nowBookMap}
         <span class="uk-label {nowBookMap.has(book.isbn)?"uk-label-danger":"uk-label-success"}">{nowBookMap.has(book.isbn)?"所持":"未所持"}</span>
       {/if}
@@ -23,9 +25,9 @@
 {/each}
 
 <style>
-  .title {
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .right-container {
+    overflow: hidden;
+    word-break: break-word;
   }
   .card {
     display: flex;
