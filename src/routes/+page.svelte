@@ -1,4 +1,5 @@
 <script lang="ts">
+    import UIkit from "uikit";
 	import BarCodeReader from "../components/BarCodeReader.svelte";
     import { checkDigit, checkISBN } from "/@/lib/ts/barCode";
     import type { Book } from "/@/lib/types/book";
@@ -9,22 +10,28 @@
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    let myBooks = (async () => {
+    let ownBookMapPromise = (async () => {
         const res = await fetch("/api/books");
-        if (!res.ok) return;
+        if (!res.ok) return null;
 
-        return (await res.json()) as Book[];
+        const books = await res.json() as Book[];
+
+        return new Map(books.map((book) => [book.isbn, book]))
     })()
 
     let books = new Map<string, Book>();
     async function onIsbn(e: CustomEvent<string>) {
-        if (!checkDigit(e.detail) || !checkISBN(e.detail) || books.has(e.detail)) return;
+        const isbn = e.detail;
 
-        const res = await fetch(`/api/books/${e.detail}`)
+        if (!checkDigit(isbn) || !checkISBN(isbn) || books.has(isbn)) return;
+
+        const res = await fetch(`/api/books/${isbn}`)
         if (!res.ok) return;
 
         const json: Book = await res.json();
-        books = books.set(e.detail, json);
+        books = books.set(isbn, json);
+
+        UIkit.notification(`<p uk-text>「${json.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000})
     }
 
     async function submit() {
@@ -40,6 +47,10 @@
             modalOpen = false;
         }
     }
+
+    function hasDuplicateBook(books: Map<string, Book>, ownBookMap: Map<string, Book>) {
+        return [...books.values()].some((book) => ownBookMap.has(book.isbn));
+    }
 </script>
 
 <svelte:head>
@@ -48,25 +59,26 @@
 </svelte:head>
 
 {#if $page.data.session?.user?.name}
-    <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true} uk-toggle="target: #read-modal">書籍追加</button>
-    {#await myBooks}
-        <div class="uk-align-center" uk-spinner="ratio:3"></div>
-    {:then books}
-        <Books books={books?[...books.values()].reverse():[]} />
+    <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true} data-uk-toggle="target: #read-modal">書籍追加</button>
+    {#await ownBookMapPromise}
+        <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
+    {:then ownBookMap}
+        <Books books={ownBookMap?[...ownBookMap.values()].reverse():[]} />
     {/await}
 
-    <div id="read-modal" uk-modal >
+    <div id="read-modal" data-uk-modal >
         {#if modalOpen}
             <div class="uk-modal-dialog uk-modal-body uk-align-center ">
                 <p>バーコードをかざしてください</p><br>
                 <BarCodeReader on:isbn={onIsbn} /><br>
-                <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0} type="button" on:click={submit} uk-toggle="target: #read-modal">追加</button>
-                {#await myBooks}
-                <Books books={[...books.values()].reverse()} />
-                {:then nowBooks}
-                <Books books={[...books.values()].reverse()} nowBooks={nowBooks} />
+                {#await ownBookMapPromise}
+                    <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0} type="button" on:click={submit} data-uk-toggle="target: #read-modal">追加</button>
+                    <Books books={[...books.values()].reverse()} />
+                {:then ownBookMap}
+                    <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0 || (ownBookMap && hasDuplicateBook(books, ownBookMap))} type="button" on:click={submit} data-uk-toggle="target: #read-modal">追加</button>
+                    <Books books={[...books.values()].reverse()} ownBookMap={ownBookMap} />
                 {/await}
-                <button class="uk-modal-close-default" type="button" uk-close></button>
+                <button class="uk-modal-close-default" type="button" data-uk-close></button>
             </div>
         {/if}
     </div>
