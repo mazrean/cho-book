@@ -31,7 +31,9 @@
         const json: Book = await res.json();
         books = books.set(isbn, json);
 
-        UIkit.notification(`<p uk-text>「${json.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000})
+        if ((await ownBookMapPromise)?.has(isbn)) {
+            UIkit.notification(`<p uk-text>「${json.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000});
+        }
     }
 
     async function submit() {
