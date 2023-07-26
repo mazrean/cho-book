@@ -71,8 +71,8 @@
     <div id="read-modal" data-uk-modal >
         {#if modalOpen}
             <div class="uk-modal-dialog uk-modal-body uk-align-center ">
-                <p>バーコードをかざしてください</p><br>
-                <BarCodeReader on:isbn={onIsbn} /><br>
+                <p class="uk-text">バーコードをかざしてください</p>
+                <BarCodeReader on:isbn={onIsbn} />
                 {#await ownBookMapPromise}
                     <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0} type="button" on:click={submit} data-uk-toggle="target: #read-modal">追加</button>
                     <Books books={[...books.values()].reverse()} />
