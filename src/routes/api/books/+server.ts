@@ -93,8 +93,8 @@ export async function GET({ locals, platform }) {
 		.all();
 
 	return new Response(
-		JSON.stringify({
-			books: books.map((book) => {
+		JSON.stringify(
+			books.map((book) => {
 				return {
 					isbn: book.isbn,
 					title: book.title,
@@ -103,7 +103,7 @@ export async function GET({ locals, platform }) {
 					imgUrl: book.img_url
 				} as Book;
 			})
-		}),
+		),
 		{
 			status: 200
 		}
