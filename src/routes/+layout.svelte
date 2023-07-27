@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import Header from '/@/components/Header.svelte';
+	import Header from '/@/components/organs/Header.svelte';
 	import '$lib/styles.scss';
 	import 'uikit/dist/js/uikit.min.js';
 	import 'uikit/dist/js/uikit-icons.min.js';

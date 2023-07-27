@@ -25,4 +25,6 @@
   });
 </script>
 
-<video bind:this={videoRef}></video>
+<video bind:this={videoRef}>
+  <track kind="captions">
+</video>

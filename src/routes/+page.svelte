@@ -1,57 +1,35 @@
 <script lang="ts">
-    import UIkit from "uikit";
-	import BarCodeReader from "../components/BarCodeReader.svelte";
-    import { checkDigit, checkISBN } from "/@/lib/ts/barCode";
-    import type { Book } from "/@/lib/types/book";
-	import Books from "../components/Books.svelte";
-	import { signIn } from '@auth/sveltekit/client';
 	import { page } from '$app/stores';
+	import { signIn } from '@auth/sveltekit/client';
+
+    import type { Book } from "/@/lib/types/book";
+
+	import BookItem from "/@/components/molecules/Book.svelte";
+	import BarCodeModal from '../components/organs/BarCodeModal.svelte';
 
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    let ownBookMapPromise = (async () => {
+    let ownBooksPromise = (async () => {
         const res = await fetch("/api/books");
         if (!res.ok) return null;
 
-        const books = await res.json() as Book[];
-
-        return new Map(books.map((book) => [book.isbn, book]))
+        return (await res.json()) as Book[];
     })()
 
-    let books = new Map<string, Book>();
-    async function onIsbn(e: CustomEvent<string>) {
-        const isbn = e.detail;
+    const onSubmit = async (e: CustomEvent<Book[]>) => {
+        const books = e.detail;
 
-        if (!checkDigit(isbn) || !checkISBN(isbn) || books.has(isbn)) return;
-
-        const res = await fetch(`/api/books/${isbn}`)
-        if (!res.ok) return;
-
-        const json: Book = await res.json();
-        books = books.set(isbn, json);
-
-        if ((await ownBookMapPromise)?.has(isbn)) {
-            UIkit.notification(`<p uk-text>「${json.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000});
-        }
-    }
-
-    async function submit() {
         const res = await fetch(`/api/books`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify([...books.values()]),
+            body: JSON.stringify(books),
         });
         if (res.ok) {
-            books = new Map<string, Book>();
             modalOpen = false;
         }
-    }
-
-    function hasDuplicateBook(books: Map<string, Book>, ownBookMap: Map<string, Book>) {
-        return [...books.values()].some((book) => ownBookMap.has(book.isbn));
     }
 </script>
 
@@ -61,29 +39,17 @@
 </svelte:head>
 
 {#if $page.data.session?.user?.name}
-    <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true} data-uk-toggle="target: #read-modal">書籍追加</button>
-    {#await ownBookMapPromise}
+    <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true}>書籍追加</button>
+    {#await ownBooksPromise}
         <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
-    {:then ownBookMap}
-        <Books books={ownBookMap?[...ownBookMap.values()].reverse():[]} />
-    {/await}
-
-    <div id="read-modal" data-uk-modal >
-        {#if modalOpen}
-            <div class="uk-modal-dialog uk-modal-body uk-align-center ">
-                <p class="uk-text">バーコードをかざしてください</p>
-                <BarCodeReader on:isbn={onIsbn} />
-                {#await ownBookMapPromise}
-                    <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0} type="button" on:click={submit} data-uk-toggle="target: #read-modal">追加</button>
-                    <Books books={[...books.values()].reverse()} />
-                {:then ownBookMap}
-                    <button class="uk-button uk-button-default uk-button-primary uk-width-1-1" disabled={[...books.values()].length === 0 || (ownBookMap && hasDuplicateBook(books, ownBookMap))} type="button" on:click={submit} data-uk-toggle="target: #read-modal">追加</button>
-                    <Books books={[...books.values()].reverse()} ownBookMap={ownBookMap} />
-                {/await}
-                <button class="uk-modal-close-default" type="button" data-uk-close></button>
-            </div>
+    {:then ownBooks}
+        {#if ownBooks}
+            {#each ownBooks as book}
+                <BookItem book={book} />
+            {/each}
         {/if}
-    </div>
+        <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
+    {/await}
 {:else}
     <button class="uk-button uk-button-default uk-button-primary" on:click={() => signIn('google')}>Sign In</button>
 {/if}

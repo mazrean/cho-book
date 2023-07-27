@@ -59,7 +59,7 @@ export async function GET({ params }) {
 
 	const book: Book = {
 		isbn: isbn,
-		title: null,
+		title: '',
 		author: null,
 		publisher: null,
 		imgUrl: null
