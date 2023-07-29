@@ -83,11 +83,10 @@ export async function GET({ locals, platform }) {
 			author: string;
 			publisher: string;
 			img_url: string;
-			created_at: string;
 		}[];
 	} = await db
 		.prepare(
-			'SELECT books.* FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY books.created_at DESC'
+			'SELECT books.* FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY user_book_relations.created_at DESC'
 		)
 		.bind(userEmail)
 		.all();

@@ -43,6 +43,13 @@
         dispatcher("submit", books);
         books = [];
     };
+
+    const onDelete = (e: CustomEvent<Book>) => {
+        const book = e.detail;
+        books = books.filter(b => b.isbn !== book.isbn);
+        hasDuplicate = books.some(b => ownBookMap?.has(b.isbn));
+        bookMap.delete(book.isbn);
+    }
 </script>
 
 <div id="bar-code-modal" data-uk-modal >
@@ -59,7 +66,7 @@
             >追加</button>
             {#if ownBookMap}
                 {#each books as book}
-                    <BookItem book={book} owned={ownBookMap.has(book.isbn)} />
+                    <BookItem book={book} owned={ownBookMap.has(book.isbn)} on:delete={onDelete} />
                 {/each}
             {/if}
             <button class="uk-modal-close-default" type="button" data-uk-close></button>

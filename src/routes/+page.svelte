@@ -10,11 +10,13 @@
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    let ownBooksPromise = (async () => {
+    let ownBooks: Book[] | null = null;
+
+    (async () => {
         const res = await fetch("/api/books");
         if (!res.ok) return null;
 
-        return (await res.json()) as Book[];
+        ownBooks = await res.json();
     })()
 
     const onSubmit = async (e: CustomEvent<Book[]>) => {
@@ -29,6 +31,18 @@
         });
         if (res.ok) {
             modalOpen = false;
+            ownBooks = [...books, ...ownBooks ?? []];
+        }
+    }
+
+    const onDelete = async (e: CustomEvent<Book>) => {
+        const book = e.detail;
+
+        const res = await fetch(`/api/books/${book.isbn}`, {
+            method: "DELETE",
+        });
+        if (res.ok) {
+            ownBooks = ownBooks?.filter(b => b.isbn !== book.isbn) ?? ownBooks;
         }
     }
 </script>
@@ -40,16 +54,14 @@
 
 {#if $page.data.session?.user?.name}
     <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true}>書籍追加</button>
-    {#await ownBooksPromise}
-        <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
-    {:then ownBooks}
-        {#if ownBooks}
-            {#each ownBooks as book}
-                <BookItem book={book} />
-            {/each}
-        {/if}
+    {#if ownBooks}
+        {#each ownBooks as book}
+            <BookItem book={book} on:delete={onDelete} />
+        {/each}
         <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
-    {/await}
+    {:else}
+        <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
+    {/if}
 {:else}
     <button class="uk-button uk-button-default uk-button-primary" on:click={() => signIn('google')}>Sign In</button>
 {/if}

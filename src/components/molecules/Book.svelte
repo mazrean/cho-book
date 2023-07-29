@@ -1,8 +1,16 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+
 	import type { Book } from "/@/lib/types/book";
 
   export let book: Book;
   export let owned: Boolean | null = null;
+
+  const dispatcher = createEventDispatcher();
+
+  const onDelete = () => {
+    dispatcher("delete", book);
+  }
 </script>
 
 <div class="card uk-card uk-card-default uk-card-body uk-margin">
@@ -18,7 +26,7 @@
     {#if owned !== null}
       <span class="uk-label {owned?"uk-label-danger":"uk-label-success"}">{owned?"所持":"未所持"}</span>
     {/if}
-    <button class="uk-button uk-button-default uk-button-secondary uk-width-1-1">削除</button>
+    <button class="uk-button uk-button-default uk-button-secondary uk-width-1-1" on:click={onDelete}>削除</button>
   </div>
 </div>
 

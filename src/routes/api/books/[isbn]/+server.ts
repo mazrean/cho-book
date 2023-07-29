@@ -1,8 +1,8 @@
-import { json } from '@sveltejs/kit';
+import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
 import type { Book } from '/@/lib/types/book';
 
-export async function GET({ params }) {
+export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
 
 	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
@@ -82,4 +82,32 @@ export async function GET({ params }) {
 	}
 
 	return json(book);
+}
+
+export async function DELETE({
+	params,
+	locals,
+	platform
+}: RequestEvent<{ isbn: string }>): Promise<Response> {
+	const session = await locals.getSession();
+	if (!session) {
+		return new Response(null, { status: 401 });
+	}
+
+	const userEmail = session.user?.email;
+	if (!userEmail) {
+		return new Response(null, { status: 401 });
+	}
+
+	const isbn = params.isbn;
+
+	const db = platform?.env.DB;
+
+	const info = await db
+		.prepare('DELETE FROM user_book_relations WHERE user_email = ? AND book_isbn = ?')
+		.bind(userEmail, isbn)
+		.run();
+	if (!info?.success) return new Response('failed to delete user_book_relations', { status: 500 });
+
+	return new Response(null, { status: 204 });
 }
