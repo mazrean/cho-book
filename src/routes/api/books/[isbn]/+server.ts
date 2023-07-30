@@ -21,9 +21,21 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		record = parser.parse(record)?.['srw_dc:dc'];
 		if (!record) return null;
 
-		const title = record['dc:title'] as string;
-		const author = record['dc:creator'] as string;
-		const publisher = record['dc:publisher'] as string;
+		let title = record['dc:title'] as string | string[];
+		if (Array.isArray(title)) {
+			title = title.join(', ');
+		}
+
+		let author = record['dc:creator'] as string | string[];
+		if (Array.isArray(author)) {
+			author = author.join(', ');
+		}
+
+		let publisher = record['dc:publisher'] as string | string[];
+		if (Array.isArray(publisher)) {
+			publisher = publisher.join(', ');
+		}
+
 		const imgUrl = imgRes.ok ? (issImgUrl as string) : null;
 
 		return { title, author, publisher, imgUrl };
