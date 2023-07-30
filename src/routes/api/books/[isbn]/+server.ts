@@ -64,11 +64,14 @@ export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<R
 		publisher: null,
 		imgUrl: null
 	};
-	const requests = [issPromise, googlePromise, openbdPromise];
+	let requests = [issPromise, googlePromise, openbdPromise].map((p, i) =>
+		p.then((res) => ({ res, i }))
+	);
 	let i = 0;
 	while (i < requests.length && (!book.title || !book.author || !book.publisher || !book.imgUrl)) {
-		const res = await Promise.race(requests);
+		const { res, i: j } = await Promise.race(requests);
 		i++;
+		requests = requests.splice(j, 1);
 
 		if (res) {
 			book.title ||= res.title || null;
@@ -76,6 +79,7 @@ export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<R
 			book.publisher ||= res.publisher || null;
 			book.imgUrl ||= res.imgUrl || null;
 		}
+		console.log(book);
 	}
 	if (!book.title) {
 		return new Response('no book', { status: 404 });
