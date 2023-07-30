@@ -2,7 +2,7 @@ import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
 import type { Book } from '/@/lib/types/book';
 
-export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<Response> {
+export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
 
 	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
@@ -64,14 +64,14 @@ export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<R
 		publisher: null,
 		imgUrl: null
 	};
-	let requests = [issPromise, googlePromise, openbdPromise].map((p, i) =>
-		p.then((res) => ({ res, i }))
-	);
-	let i = 0;
-	while (i < requests.length && (!book.title || !book.author || !book.publisher || !book.imgUrl)) {
-		const { res, i: j } = await Promise.race(requests);
-		i++;
-		requests = requests.splice(j, 1);
+	let requests = [issPromise, googlePromise, openbdPromise].map((p, i) => ({
+		withI: p.then((res) => ({ res, i })),
+		p
+	}));
+	while (requests.length > 0 && (!book.title || !book.author || !book.publisher || !book.imgUrl)) {
+		const { res, i } = await Promise.race(requests.map(({ withI }) => withI));
+		requests.splice(i, 1);
+		requests = requests.map(({ p }, i) => ({ withI: p.then((res) => ({ res, i })), p }));
 
 		if (res) {
 			book.title ||= res.title || null;
@@ -79,7 +79,6 @@ export async function GET({ params }: RequestEvent<{ isbn: string }>): Promise<R
 			book.publisher ||= res.publisher || null;
 			book.imgUrl ||= res.imgUrl || null;
 		}
-		console.log(book);
 	}
 	if (!book.title) {
 		return new Response('no book', { status: 404 });
