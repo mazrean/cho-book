@@ -21,10 +21,10 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		record = parser.parse(record)?.['srw_dc:dc'];
 		if (!record) return null;
 
-		const title = record['dc:title'];
-		const author = record['dc:creator'];
-		const publisher = record['dc:publisher'];
-		const imgUrl = imgRes.ok ? issImgUrl : null;
+		const title = record['dc:title'] as string;
+		const author = record['dc:creator'] as string;
+		const publisher = record['dc:publisher'] as string;
+		const imgUrl = imgRes.ok ? (issImgUrl as string) : null;
 
 		return { title, author, publisher, imgUrl };
 	});
@@ -35,10 +35,10 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 			if (json.totalItems === 0) return null;
 
 			const item = json.items[0];
-			const title = item.volumeInfo.title;
-			const author = item.volumeInfo.authors?.join(', ');
-			const publisher = item.volumeInfo.publisher;
-			const imgUrl = item.volumeInfo.imageLinks?.thumbnail;
+			const title = item.volumeInfo.title as string;
+			const author = item.volumeInfo.authors?.join(', ') as string;
+			const publisher = item.volumeInfo.publisher as string;
+			const imgUrl: string | null = item.volumeInfo.imageLinks?.thumbnail;
 
 			return { title, author, publisher, imgUrl };
 		}
@@ -49,10 +49,10 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		if (json.length === 0 || json[0] === null) return null;
 
 		const item = json[0].summary;
-		const title = item.title;
-		const author = item.author;
-		const publisher = item.publisher;
-		const imgUrl = item.cover;
+		const title = item.title as string;
+		const author = item.author as string;
+		const publisher = item.publisher as string;
+		const imgUrl: string | null = item.cover;
 
 		return { title, author, publisher, imgUrl };
 	});
@@ -74,7 +74,13 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		requests = requests.map(({ p }, i) => ({ withI: p.then((res) => ({ res, i })), p }));
 
 		if (res) {
-			book.title ||= res.title || null;
+			// 巻が入っていて欲しいので、長い方を採用
+			// ただし、途中で全情報が揃った場合はレスポンス速度を優先して確認していない
+			book.title = res.title
+				? res.title.length > book.title.length
+					? res.title
+					: book.title
+				: book.title;
 			book.author ||= res.author || null;
 			book.publisher ||= res.publisher || null;
 			book.imgUrl ||= res.imgUrl || null;
