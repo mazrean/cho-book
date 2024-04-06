@@ -82,12 +82,11 @@
 
 {#if $page.data.session?.user?.name}
     <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true}>書籍追加</button>
-    {#if ownBooks || isEnd}
-        {#each ownBooks as book}
-            <BookItem book={book} on:delete={onDelete} />
-        {/each}
-        <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
-    {:else}
+    <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
+    {#each ownBooks as book}
+        <BookItem book={book} on:delete={onDelete} />
+    {/each}
+    {#if isLoading}
         <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
     {/if}
 {:else}
