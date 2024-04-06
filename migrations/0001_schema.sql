@@ -1,7 +1,7 @@
+-- Migration number: 0001 	 2024-04-06T06:14:29.966Z
 PRAGMA foreign_keys=true;
 
-DROP TABLE IF EXISTS `books`;
-CREATE TABLE `books` (
+CREATE TABLE IF NOT EXISTS `books` (
   `isbn` char(13) NOT NULL,
   `title` varchar(255),
   `author` varchar(255),
@@ -11,10 +11,10 @@ CREATE TABLE `books` (
   PRIMARY KEY (`isbn`)
 );
 
-DROP TABLE IF EXISTS `user_book_relations`;
-CREATE TABLE `user_book_relations` (
+CREATE TABLE IF NOT EXISTS `user_book_relations` (
   `user_email` varchar(255) NOT NULL,
   `book_isbn` char(13) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
   PRIMARY KEY (`user_email`,`book_isbn`),
   FOREIGN KEY (`book_isbn`) REFERENCES `books` (`isbn`)
 );
