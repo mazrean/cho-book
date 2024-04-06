@@ -13,7 +13,7 @@ export async function GET({
 	const cache = platform?.caches.default;
 	if (cache) {
 		const response = await cache.match(request);
-		if (response) {
+		if (response?.ok) {
 			return response;
 		}
 	}
@@ -109,7 +109,8 @@ export async function GET({
 		title: '',
 		author: null,
 		publisher: null,
-		imgUrl: null
+		imgUrl: null,
+		rawImgUrl: null
 	};
 	let requests = [dbPromise, issPromise, googlePromise, openbdPromise].map((p, i) => ({
 		withI: p.then((res) => ({ res, i })),
@@ -130,16 +131,13 @@ export async function GET({
 				: book.title;
 			book.author ||= res.author || null;
 			book.publisher ||= res.publisher || null;
-			book.imgUrl ||= res.imgUrl || null;
+			book.imgUrl = res.imgUrl ? `/api/books/${isbn}/image` : book.imgUrl;
+			book.rawImgUrl ||= res.imgUrl || null;
 		}
 	}
 	if (!book.title) {
 		return new Response('no book', { status: 404 });
 	}
-
-	const res = json(book);
-	res.headers.set('Cache-Control', 'public, immutable, s-maxage=604800');
-	cache?.put(request, res.clone());
 
 	const info = await db
 		.prepare(
@@ -148,6 +146,10 @@ export async function GET({
 		.bind(book.isbn, book.title, book.author, book.publisher, book.imgUrl)
 		.run();
 	if (!info?.success) return new Response('failed to insert books', { status: 500 });
+
+	const res = json(book);
+	res.headers.set('Cache-Control', 'public, immutable, s-maxage=604800');
+	cache?.put(request, res.clone());
 
 	return res;
 }

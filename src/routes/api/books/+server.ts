@@ -93,7 +93,9 @@ export async function GET({ locals, platform, url }) {
 					title: book.title,
 					author: book.author,
 					publisher: book.publisher,
-					imgUrl: book.img_url
+					// 画像URLをCDN経由に差し替える
+					imgUrl: book.img_url ? `/api/books/${book.isbn}/image` : null,
+					rawImgUrl: book.img_url
 				} as Book;
 			})
 		),
