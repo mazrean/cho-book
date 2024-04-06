@@ -1,13 +1,22 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
-import type { Book, DBBook } from '/@/lib/types/book';
+import type { Book } from '/@/lib/types/book';
 
 export async function GET({
+	request,
 	params,
 	platform,
 	fetch
 }: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
+
+	const cache = platform?.caches.default;
+	if (cache) {
+		const response = await cache.match(request);
+		if (response) {
+			return response;
+		}
+	}
 
 	const db = platform?.env.DB;
 	if (!db) {
@@ -128,6 +137,10 @@ export async function GET({
 		return new Response('no book', { status: 404 });
 	}
 
+	const res = json(book);
+	res.headers.set('Cache-Control', 'public, immutable, s-maxage=604800');
+	cache?.put(request, res);
+
 	const info = await db
 		.prepare(
 			'INSERT OR REPLACE INTO `books` (`isbn`, `title`, `author`, `publisher`, `img_url`) VALUES (?, ?, ?, ?, ?)'
@@ -136,7 +149,7 @@ export async function GET({
 		.run();
 	if (!info?.success) return new Response('failed to insert books', { status: 500 });
 
-	return json(book);
+	return res;
 }
 
 export async function DELETE({
