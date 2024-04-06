@@ -85,7 +85,7 @@
     {#each ownBooks as book}
         <BookItem book={book} on:delete={onDelete} />
     {/each}
-    <div class="uk-align-center" data-uk-spinner="ratio:3" style={isLoading ? "": "opacity: 0"}></div>
+    <div class="uk-align-center" data-uk-spinner="ratio:3" style={isLoading ? "opacity: 1": "opacity: 0"}></div>
     <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
 {:else}
     <button class="uk-button uk-button-default uk-button-primary" on:click={() => signIn('google')}>Sign In</button>
