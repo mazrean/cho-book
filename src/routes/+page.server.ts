@@ -42,8 +42,7 @@ export async function load({ platform, locals }) {
 					title: book.title,
 					author: book.author,
 					publisher: book.publisher,
-					imgUrl: book.img_url ? `/api/books/${book.isbn}/image` : null,
-					rawImgUrl: book.img_url
+					imgUrl: book.img_url
 				} as Book)
 		),
 		limit,
