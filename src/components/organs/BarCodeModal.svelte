@@ -20,6 +20,7 @@
             uikit = m.default;
         });
     }
+
     $: open? uikit?.modal("#bar-code-modal")?.show(): uikit?.modal("#bar-code-modal")?.hide();
 
     let books: {
@@ -80,23 +81,23 @@
 </script>
 
 <div id="bar-code-modal" data-uk-modal >
-    {#if open}
-        <div class="uk-modal-dialog uk-modal-body uk-align-center ">
-            <p class="uk-text">バーコードをかざしてください</p>
+    <div class="uk-modal-dialog uk-modal-body uk-align-center ">
+        <p class="uk-text">バーコードをかざしてください</p>
+        {#if open}
             <BarCodeReader on:isbn={onIsbn} />
-            <button
-                class="uk-button uk-button-default uk-button-primary uk-width-1-1"
-                disabled={books.length === 0 || hasDuplicate}
-                type="button"
-                on:click={onSubmit}
-                data-uk-toggle="target: #read-modal"
-            >追加</button>
-            {#if ownBookMap}
-                {#each books as book}
-                    <BookItem book={book.book} owned={ownBookMap.has(book.book.isbn)} on:delete={onDelete} />
-                {/each}
-            {/if}
-            <button class="uk-modal-close-default" type="button" data-uk-close></button>
-        </div>
-    {/if}
+        {/if}
+        <button
+            class="uk-button uk-button-default uk-button-primary uk-width-1-1"
+            disabled={books.length === 0 || hasDuplicate}
+            type="button"
+            on:click={onSubmit}
+            data-uk-toggle="target: #read-modal"
+        >追加</button>
+        {#if ownBookMap}
+            {#each books as book}
+                <BookItem book={book.book} owned={ownBookMap.has(book.book.isbn)} on:delete={onDelete} />
+            {/each}
+        {/if}
+        <button class="uk-modal-close-default" type="button" data-uk-close on:click={() => open = false}></button>
+    </div>
 </div>

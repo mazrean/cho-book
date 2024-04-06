@@ -10,8 +10,6 @@
 
     export let data: PageData;
 
-    // カメラの権限要求タイミングを使う時まで遅らせるため
-    let modalOpen = false;
 
     const limit = data.limit ?? 20;
     let ownBooks = data.ownBooks ?? [];
@@ -45,6 +43,7 @@
         }
     }
 
+    let modalOpen = false;
     const onSubmit = async (e: CustomEvent<Book[]>) => {
         const books = e.detail;
 

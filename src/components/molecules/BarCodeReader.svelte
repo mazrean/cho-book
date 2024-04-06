@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { BrowserMultiFormatReader } from '@zxing/browser';
-	import { createEventDispatcher, onMount } from 'svelte';
+  import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 
   const dispatcher = createEventDispatcher();
 
@@ -8,8 +8,9 @@
 
   const codeReader = new BrowserMultiFormatReader();
 
+  let control: IScannerControls
   onMount(async () => {
-    await codeReader.decodeFromConstraints({
+    control = await codeReader.decodeFromConstraints({
       video: {
         facingMode: 'environment',
       },
@@ -22,6 +23,9 @@
       const strIsbn = result.getText();
       dispatcher('isbn', strIsbn);
     })
+  });
+  onDestroy(() => {
+    control.stop();
   });
 </script>
 
