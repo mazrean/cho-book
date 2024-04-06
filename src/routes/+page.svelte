@@ -10,7 +10,6 @@
 
     export let data: PageData;
 
-
     const limit = data.limit ?? 20;
     let ownBooks = data.ownBooks ?? [];
     let isEnd = data.isEnd ?? false;

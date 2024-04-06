@@ -3,16 +3,16 @@ import type { Book } from '/@/lib/types/book';
 export async function load({ platform, locals }) {
 	const session = await locals.getSession();
 	if (!session) {
-		return new Response(null, { status: 401 });
+		return {};
 	}
 
 	const userEmail = session.user?.email;
 	if (!userEmail) {
-		return new Response(null, { status: 401 });
+		return {};
 	}
 	const db = platform?.env.DB;
 	if (!db) {
-		return new Response(null, { status: 500 });
+		return {};
 	}
 
 	const limit = 20;
