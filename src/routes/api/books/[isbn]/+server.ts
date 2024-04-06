@@ -139,7 +139,7 @@ export async function GET({
 
 	const res = json(book);
 	res.headers.set('Cache-Control', 'public, immutable, s-maxage=604800');
-	cache?.put(request, res);
+	cache?.put(request, res.clone());
 
 	const info = await db
 		.prepare(
