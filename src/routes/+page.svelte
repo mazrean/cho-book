@@ -35,7 +35,8 @@
     let isLoading = false;
     const scrollHandler = async () => {
         offsetHeight = document.body.offsetHeight;
-        const hasReached = innerHeight + Math.ceil(scrollY) >= offsetHeight
+        // 300px分余裕を持たせて読み込む
+        const hasReached = innerHeight + Math.ceil(scrollY) >= offsetHeight - 300;
         if (hasReached && !isLoading && !isEnd) {
             isLoading = true;
             await loadBooks();
@@ -85,7 +86,9 @@
     {#each ownBooks as book}
         <BookItem book={book} on:delete={onDelete} />
     {/each}
-    <div class="uk-align-center" data-uk-spinner="ratio:3" style={isLoading ? "opacity: 1": "opacity: 0"}></div>
+    {#if isLoading}
+        <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
+    {/if}
     <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
 {:else}
     <button class="uk-button uk-button-default uk-button-primary" on:click={() => signIn('google')}>Sign In</button>
