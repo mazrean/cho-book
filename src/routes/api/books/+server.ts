@@ -36,7 +36,7 @@ export async function POST({ locals, platform, request }) {
 	return new Response(null, { status: 201 });
 }
 
-export async function GET({ locals, platform }) {
+export async function GET({ locals, platform, url }) {
 	const session = await locals.getSession();
 	if (!session) {
 		return new Response(null, { status: 401 });
@@ -45,6 +45,22 @@ export async function GET({ locals, platform }) {
 	const userEmail = session.user?.email;
 	if (!userEmail) {
 		return new Response(null, { status: 401 });
+	}
+
+	const strLimit = url.searchParams.get('limit');
+	let limit: number | undefined;
+	if (strLimit) {
+		limit = parseInt(strLimit);
+	} else {
+		limit = 20;
+	}
+
+	const strOffset = url.searchParams.get('offset');
+	let offset: number | undefined;
+	if (strOffset) {
+		offset = parseInt(strOffset);
+	} else {
+		offset = 0;
 	}
 
 	const db = platform?.env.DB;
@@ -64,9 +80,9 @@ export async function GET({ locals, platform }) {
 		}[];
 	} = await db
 		.prepare(
-			'SELECT books.* FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY user_book_relations.created_at DESC'
+			'SELECT books.* FROM books JOIN user_book_relations ON books.isbn = user_book_relations.book_isbn WHERE user_book_relations.user_email = ? ORDER BY user_book_relations.created_at DESC LIMIT ? OFFSET ?'
 		)
-		.bind(userEmail)
+		.bind(userEmail, limit, offset)
 		.all();
 
 	return new Response(

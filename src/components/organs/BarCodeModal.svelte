@@ -1,5 +1,5 @@
 <script lang="ts">
-    import UIkit from "uikit";
+    import type UIkit from "uikit";
 	import { createEventDispatcher } from 'svelte';
 
     import type { Book } from "/@/lib/types/book";
@@ -7,13 +7,20 @@
 
 	import BarCodeReader from "/@/components/molecules/BarCodeReader.svelte";
 	import BookItem from "/@/components/molecules/Book.svelte";
+	import { browser } from "$app/environment";
 
     export let open = false;
     export let ownBookMap: Map<string, Book> | null = null;
 
     const dispatcher = createEventDispatcher();
 
-    $: open? UIkit.modal("#bar-code-modal")?.show(): UIkit.modal("#bar-code-modal")?.hide();
+    let uikit: typeof UIkit | undefined;
+    if (browser) {
+        import('uikit').then(m => {
+            uikit = m.default;
+        });
+    }
+    $: open? uikit?.modal("#bar-code-modal")?.show(): uikit?.modal("#bar-code-modal")?.hide();
 
     let books: Book[] = [];
     let hasDuplicate = false;
@@ -35,7 +42,7 @@
 
         if (ownBookMap?.has(isbn)) {
             hasDuplicate = true;
-            UIkit.notification(`<p uk-text>「${book.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000});
+            uikit?.notification(`<p uk-text>「${book.title}」は既に所持しています</p>`, {status:'danger', timeout: 5000});
         }
     }
 

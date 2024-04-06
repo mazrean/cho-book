@@ -6,18 +6,43 @@
 
 	import BookItem from "/@/components/molecules/Book.svelte";
 	import BarCodeModal from '../components/organs/BarCodeModal.svelte';
+	import type { PageData } from './$types';
+
+    export let data: PageData;
 
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-    let ownBooks: Book[] | null = null;
 
-    (async () => {
-        const res = await fetch("/api/books");
-        if (!res.ok) return null;
+    const limit = data.limit ?? 20;
+    let ownBooks = data.ownBooks ?? [];
+    let isEnd = data.isEnd ?? false;
+    let offset = limit;
+    const loadBooks = async () => {
+        const res = await fetch(`/api/books?limit=${limit}&offset=${offset}`);
+        if (!res.ok) {
+            isLoading = false;
+            return;
+        }
 
-        ownBooks = await res.json();
-    })()
+        ownBooks = [...(ownBooks ?? []), ...(await res.json())];
+
+        offset += limit;
+        isEnd = ownBooks.length < limit;
+    }
+
+    let innerHeight: number;
+    let scrollY: number;
+    let offsetHeight: number;
+    let isLoading = false;
+    const scrollHandler = async () => {
+        const hasReached = innerHeight + Math.ceil(scrollY) >= offsetHeight
+        if (hasReached && !isLoading && !isEnd) {
+            isLoading = true;
+            await loadBooks();
+            isLoading = false;
+        }
+    }
 
     const onSubmit = async (e: CustomEvent<Book[]>) => {
         const books = e.detail;
@@ -52,9 +77,12 @@
 	<meta name="description" content="重Book" />
 </svelte:head>
 
+<svelte:window on:scroll={scrollHandler} on:wheel={scrollHandler} on:touchmove={scrollHandler} bind:innerHeight={innerHeight} bind:scrollY={scrollY} />
+<svelte:body bind:offsetHeight={offsetHeight} />
+
 {#if $page.data.session?.user?.name}
     <button class="uk-button uk-button-default uk-button-primary" type="button" on:click={()=>modalOpen=true}>書籍追加</button>
-    {#if ownBooks}
+    {#if ownBooks || isEnd}
         {#each ownBooks as book}
             <BookItem book={book} on:delete={onDelete} />
         {/each}
