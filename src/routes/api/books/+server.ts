@@ -18,31 +18,7 @@ export async function POST({ locals, platform, request }) {
 
 	const db = platform?.env.DB;
 
-	// TODO: 他の人が登録した本を上書きしてしまう可能性があるのでだいぶ不味い挙動だが、時間がないので一旦許容
-	let query =
-		'INSERT OR REPLACE INTO `books` (`isbn`, `title`, `author`, `publisher`, `img_url`) VALUES ';
-	for (const book of books) {
-		query += `(?, ?, ?, ?, ?)`;
-
-		if (book !== books[books.length - 1]) {
-			query += ', ';
-		}
-	}
-
-	const preparedDB = db.prepare(query);
-
-	const queryParams = books.flatMap((book) => [
-		book.isbn,
-		book.title,
-		book.author,
-		book.publisher,
-		book.imgUrl
-	]);
-
-	const info = await preparedDB.bind(...queryParams).run();
-	if (!info?.success) return new Response('failed to insert books', { status: 500 });
-
-	query = 'INSERT INTO user_book_relations (user_email, book_isbn) VALUES ';
+	let query = 'INSERT INTO user_book_relations (user_email, book_isbn) VALUES ';
 	for (const book of books) {
 		query += `(?, ?)`;
 
@@ -51,12 +27,11 @@ export async function POST({ locals, platform, request }) {
 		}
 	}
 
-	const preparedDB2 = db.prepare(query);
-
-	const queryParams2 = books.flatMap((book) => [userEmail, book.isbn]);
-
-	const info2 = await preparedDB2.bind(...queryParams2).run();
-	if (!info2?.success) return new Response('failed to insert user_book_relations', { status: 500 });
+	const info = await db
+		?.prepare(query)
+		.bind(...books.flatMap((book) => [userEmail, book.isbn]))
+		.run();
+	if (!info?.success) return new Response('failed to insert user_book_relations', { status: 500 });
 
 	return new Response(null, { status: 201 });
 }
@@ -73,6 +48,9 @@ export async function GET({ locals, platform }) {
 	}
 
 	const db = platform?.env.DB;
+	if (!db) {
+		return new Response(null, { status: 500 });
+	}
 
 	const {
 		results: books

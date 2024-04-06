@@ -1,9 +1,35 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
-import type { Book } from '/@/lib/types/book';
+import type { Book, DBBook } from '/@/lib/types/book';
 
-export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Promise<Response> {
+export async function GET({
+	params,
+	platform,
+	fetch
+}: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
+
+	const db = platform?.env.DB;
+	if (!db) {
+		return new Response(null, { status: 500 });
+	}
+
+	const dbPromise = db
+		.prepare(
+			'SELECT `title`, `author`, `publisher`, `img_url` AS `imgUrl` FROM `books` WHERE `isbn` = ? LIMIT 1'
+		)
+		.bind(isbn)
+		.first()
+		.then((book) => {
+			if (!book) return null;
+
+			return {
+				title: book.title as string,
+				author: book.author as string,
+				publisher: book.publisher as string,
+				imgUrl: book.img_url as string | null
+			};
+		});
 
 	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
 	const issPromise = Promise.all([
@@ -76,7 +102,7 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		publisher: null,
 		imgUrl: null
 	};
-	let requests = [issPromise, googlePromise, openbdPromise].map((p, i) => ({
+	let requests = [dbPromise, issPromise, googlePromise, openbdPromise].map((p, i) => ({
 		withI: p.then((res) => ({ res, i })),
 		p
 	}));
@@ -102,6 +128,14 @@ export async function GET({ params, fetch }: RequestEvent<{ isbn: string }>): Pr
 		return new Response('no book', { status: 404 });
 	}
 
+	const info = await db
+		.prepare(
+			'INSERT OR REPLACE INTO `books` (`isbn`, `title`, `author`, `publisher`, `img_url`) VALUES (?, ?, ?, ?, ?)'
+		)
+		.bind(book.isbn, book.title, book.author, book.publisher, book.imgUrl)
+		.run();
+	if (!info?.success) return new Response('failed to insert books', { status: 500 });
+
 	return json(book);
 }
 
@@ -123,6 +157,9 @@ export async function DELETE({
 	const isbn = params.isbn;
 
 	const db = platform?.env.DB;
+	if (!db) {
+		return new Response(null, { status: 500 });
+	}
 
 	const info = await db
 		.prepare('DELETE FROM user_book_relations WHERE user_email = ? AND book_isbn = ?')

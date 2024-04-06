@@ -1,3 +1,5 @@
+import type { D1Database, DurableObjectNamespace } from '@cloudflare/workers-types';
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
