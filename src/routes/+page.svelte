@@ -24,10 +24,11 @@
             return;
         }
 
-        ownBooks = [...(ownBooks ?? []), ...(await res.json())];
+        const newBooks = await res.json();
+        ownBooks = [...(ownBooks ?? []), ...newBooks];
 
         offset += limit;
-        isEnd = ownBooks.length < limit;
+        isEnd = newBooks.length < limit;
     }
 
     let innerHeight: number;
@@ -35,7 +36,7 @@
     let offsetHeight: number;
     let isLoading = false;
     const scrollHandler = async () => {
-        offsetHeight = offsetHeight ?? document.body.offsetHeight;
+        offsetHeight = document.body.offsetHeight;
         const hasReached = innerHeight + Math.ceil(scrollY) >= offsetHeight
         if (hasReached && !isLoading && !isEnd) {
             isLoading = true;
