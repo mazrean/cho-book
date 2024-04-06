@@ -101,3 +101,9 @@
         <button class="uk-modal-close-default" type="button" data-uk-close on:click={() => open = false}></button>
     </div>
 </div>
+
+<style>
+    #bar-code-modal {
+        height: 0;
+    }
+</style>
