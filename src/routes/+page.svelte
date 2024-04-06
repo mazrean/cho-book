@@ -13,7 +13,6 @@
     // カメラの権限要求タイミングを使う時まで遅らせるため
     let modalOpen = false;
 
-
     const limit = data.limit ?? 20;
     let ownBooks = data.ownBooks ?? [];
     let isEnd = data.isEnd ?? false;
@@ -36,6 +35,7 @@
     let offsetHeight: number;
     let isLoading = false;
     const scrollHandler = async () => {
+        offsetHeight = offsetHeight ?? document.body.offsetHeight;
         const hasReached = innerHeight + Math.ceil(scrollY) >= offsetHeight
         if (hasReached && !isLoading && !isEnd) {
             isLoading = true;
