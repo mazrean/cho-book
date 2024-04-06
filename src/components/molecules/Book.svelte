@@ -15,7 +15,7 @@
 
 <div class="card uk-card uk-card-default uk-card-body uk-margin">
   {#if book.imgUrl}
-    <img src={book.imgUrl ?? ""} alt={book.title} data-uk-img>
+    <img src={book.imgUrl ?? ""} alt={book.title} data-uk-img loading="lazy">
   {/if}
   <div class="right-container uk-width-1-1">
     <h3 class="title uk-card-title uk-text-lead">{book.title}</h3>
