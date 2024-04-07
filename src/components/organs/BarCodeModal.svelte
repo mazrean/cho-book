@@ -98,6 +98,6 @@
                 <BookItem book={book.book} owned={ownBookMap.has(book.book.isbn)} on:delete={onDelete} />
             {/each}
         {/if}
-        <button class="uk-modal-close-default" type="button" data-uk-close on:click={() => open = false}></button>
+        <button class="uk-modal-close-default" type="button" data-uk-close on:click={() => dispatcher("close")}></button>
     </div>
 </div>

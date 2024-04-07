@@ -88,7 +88,7 @@
     {#if isLoading}
         <div class="uk-align-center" data-uk-spinner="ratio:3"></div>
     {/if}
-    <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} />
+    <BarCodeModal open={modalOpen} ownBookMap={new Map(ownBooks?.map(book => [book.isbn, book]))} on:submit={onSubmit} on:close={() => modalOpen=false} />
 {:else}
     <button class="uk-button uk-button-default uk-button-primary" on:click={() => signIn('google')}>Sign In</button>
 {/if}
