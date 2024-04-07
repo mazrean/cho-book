@@ -17,6 +17,9 @@ export async function POST({ locals, platform, request }) {
 	}
 
 	const db = platform?.env.DB;
+	if (!db) {
+		return new Response(null, { status: 500 });
+	}
 
 	let query = 'INSERT INTO user_book_relations (user_email, book_isbn) VALUES ';
 	for (const book of books) {
@@ -28,7 +31,7 @@ export async function POST({ locals, platform, request }) {
 	}
 
 	const info = await db
-		?.prepare(query)
+		.prepare(query)
 		.bind(...books.flatMap((book) => [userEmail, book.isbn]))
 		.run();
 	if (!info?.success) return new Response('failed to insert user_book_relations', { status: 500 });

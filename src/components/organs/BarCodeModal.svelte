@@ -68,7 +68,7 @@
     }
 
     const onSubmit = () => {
-        dispatcher("submit", books);
+        dispatcher("submit", books.map(b => b.book));
         books = [];
     };
 
