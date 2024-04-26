@@ -38,7 +38,7 @@
 	"dependencies": {
 		"@auth/core": "^0.30.0",
 		"@auth/sveltekit": "^1.0.1",
-		"@sveltejs/adapter-cloudflare-workers": "^1.2.3",
+		"@sveltejs/adapter-cloudflare-workers": "^2.4.0",
 		"@zxing/browser": "^0.1.4",
 		"fast-xml-parser": "^4.3.6",
 		"uikit": "^3.20.7"
