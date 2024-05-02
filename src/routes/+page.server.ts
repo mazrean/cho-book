@@ -1,7 +1,7 @@
 import type { Book } from '/@/lib/types/book';
 
 export async function load({ platform, locals }) {
-	const session = await locals.getSession();
+	const session = await locals.auth();
 	if (!session) {
 		return {};
 	}
@@ -43,7 +43,7 @@ export async function load({ platform, locals }) {
 					author: book.author,
 					publisher: book.publisher,
 					imgUrl: book.img_url
-				} as Book)
+				}) as Book
 		),
 		limit,
 		isEnd
