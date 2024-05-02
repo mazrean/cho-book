@@ -150,6 +150,8 @@ const getFromGoogleBooksAPI = async (isbn: string) => {
 
 const getFromOpenLibraryAPI = async (isbn: string) => {
 	const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+	if (!res.ok) return null;
+
 	const json = await res.json();
 	if (!json) return null;
 
@@ -175,7 +177,7 @@ const getFromRakutenBookSearchAPI = async (isbn: string, appId: string) => {
 		`https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404?applicationId=${appId}&isbn=${isbn}`
 	);
 	const json = await res.json();
-	if (!json?.Items) return null;
+	if (!json?.Items || json.Items.length === 0) return null;
 
 	const item = json.Items[0].Item;
 	const title = item.title as string;
