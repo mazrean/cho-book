@@ -19,4 +19,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          version: "3.28.4"
+          wranglerVersion: "3.28.4"
