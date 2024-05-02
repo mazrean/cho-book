@@ -12,6 +12,7 @@ jobs:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
     steps:
       - uses: actions/checkout@v3
       - name: Deploy
