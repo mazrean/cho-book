@@ -2,6 +2,7 @@ import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
 import type { Book } from '/@/lib/types/book';
 import type { D1Database } from '@cloudflare/workers-types';
+import { RAKUTEN_APP_ID } from '$env/static/private';
 
 export async function GET({
 	request,
@@ -34,7 +35,8 @@ export async function GET({
 		getFromDB(db, isbn),
 		getFromISSAPI(isbn),
 		getFromGoogleBooksAPI(isbn),
-		getFromOpenLibraryAPI(isbn)
+		getFromOpenLibraryAPI(isbn),
+		getFromRakutenBookSearchAPI(isbn, RAKUTEN_APP_ID)
 	].map((p, i) => ({
 		withI: p.then((res) => ({ res, i })),
 		p
@@ -166,6 +168,22 @@ const getFromOpenLibraryAPI = async (isbn: string) => {
 		publisher,
 		imgUrl
 	};
+};
+
+const getFromRakutenBookSearchAPI = async (isbn: string, appId: string) => {
+	const res = await fetch(
+		`https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404?applicationId=${appId}&isbn=${isbn}`
+	);
+	const json = await res.json();
+	if (!json?.Items) return null;
+
+	const item = json.Items[0].Item;
+	const title = item.title as string;
+	const author = item.author as string;
+	const publisher = item.publisherName as string;
+	const imgUrl = item.largeImageUrl as string;
+
+	return { title, author, publisher, imgUrl };
 };
 
 export async function DELETE({
