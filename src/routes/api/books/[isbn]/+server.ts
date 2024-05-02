@@ -155,18 +155,18 @@ const getFromOpenLibraryAPI = async (isbn: string) => {
 	const json = await res.json();
 	if (!json) return null;
 
-	const title = json.title as string;
-	const authorPromises = (json.authors as { key: string }[])?.map(async (author) => {
+	const title = (json.title as string | undefined) ?? null;
+	const authorPromises = (json.authors as { key: string }[] | undefined)?.map(async (author) => {
 		const res = await fetch(`https://openlibrary.org${author.key}.json`);
 		const json = await res.json();
 		return json.name;
 	});
-	const publisher = json.publishers?.join(', ') as string;
+	const publisher = (json.publishers as string[] | undefined)?.join(', ') ?? null;
 	const imgUrl = json.covers ? `https://covers.openlibrary.org/b/id/${json.covers[0]}-M.jpg` : null;
 
 	return {
 		title,
-		author: (await Promise.all(authorPromises)).join(', '),
+		author: authorPromises ? (await Promise.all(authorPromises)).join(', ') : null,
 		publisher,
 		imgUrl
 	};
