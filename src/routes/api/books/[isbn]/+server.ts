@@ -1,12 +1,12 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import { XMLParser } from 'fast-xml-parser';
 import type { Book } from '/@/lib/types/book';
+import type { D1Database } from '@cloudflare/workers-types';
 
 export async function GET({
 	request,
 	params,
-	platform,
-	fetch
+	platform
 }: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
 
@@ -23,87 +23,6 @@ export async function GET({
 		return new Response(null, { status: 500 });
 	}
 
-	const dbPromise = db
-		.prepare(
-			'SELECT `title`, `author`, `publisher`, `img_url` AS `imgUrl` FROM `books` WHERE `isbn` = ? LIMIT 1'
-		)
-		.bind(isbn)
-		.first()
-		.then((book) => {
-			if (!book) return null;
-
-			return {
-				title: book.title as string,
-				author: book.author as string,
-				publisher: book.publisher as string,
-				imgUrl: book.img_url as string | null
-			};
-		});
-
-	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
-	const issPromise = Promise.all([
-		fetch(
-			`https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn=${isbn}&maximumRecords=1`
-		),
-		fetch(issImgUrl)
-	]).then(async ([res, imgRes]) => {
-		const parser = new XMLParser();
-		const xml = parser.parse(await res.text());
-
-		let record = xml?.searchRetrieveResponse?.records?.record?.recordData;
-		if (!record) return null;
-
-		record = parser.parse(record)?.['srw_dc:dc'];
-		if (!record) return null;
-
-		let title = record['dc:title'] as string | string[];
-		if (Array.isArray(title)) {
-			title = title.join(', ');
-		}
-
-		let author = record['dc:creator'] as string | string[];
-		if (Array.isArray(author)) {
-			author = author.join(', ');
-		}
-
-		let publisher = record['dc:publisher'] as string | string[];
-		if (Array.isArray(publisher)) {
-			publisher = publisher.join(', ');
-		}
-
-		const imgUrl = imgRes.ok ? (issImgUrl as string) : null;
-
-		return { title, author, publisher, imgUrl };
-	});
-
-	const googlePromise = fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`).then(
-		async (res) => {
-			const json = await res.json();
-			if (json.totalItems === 0) return null;
-
-			const item = json.items[0];
-			const title = item.volumeInfo.title as string;
-			const author = item.volumeInfo.authors?.join(', ') as string;
-			const publisher = item.volumeInfo.publisher as string;
-			const imgUrl: string | null = item.volumeInfo.imageLinks?.thumbnail;
-
-			return { title, author, publisher, imgUrl };
-		}
-	);
-
-	const openbdPromise = fetch(`https://api.openbd.jp/v1/get?isbn=${isbn}`).then(async (res) => {
-		const json = await res.json();
-		if (json.length === 0 || json[0] === null) return null;
-
-		const item = json[0].summary;
-		const title = item.title as string;
-		const author = item.author as string;
-		const publisher = item.publisher as string;
-		const imgUrl: string | null = item.cover;
-
-		return { title, author, publisher, imgUrl };
-	});
-
 	const book: Book = {
 		isbn: isbn,
 		title: '',
@@ -111,7 +30,12 @@ export async function GET({
 		publisher: null,
 		imgUrl: null
 	};
-	let requests = [dbPromise, issPromise, googlePromise, openbdPromise].map((p, i) => ({
+	let requests = [
+		getFromDB(db, isbn),
+		getFromISSAPI(isbn),
+		getFromGoogleBooksAPI(isbn),
+		getFromOpenLibraryAPI(isbn)
+	].map((p, i) => ({
 		withI: p.then((res) => ({ res, i })),
 		p
 	}));
@@ -151,6 +75,98 @@ export async function GET({
 
 	return res;
 }
+
+const getFromDB = async (db: D1Database, isbn: string) => {
+	const book = await db
+		.prepare(
+			'SELECT `title`, `author`, `publisher`, `img_url` AS `imgUrl` FROM `books` WHERE `isbn` = ? LIMIT 1'
+		)
+		.bind(isbn)
+		.first();
+	if (!book) return null;
+
+	return {
+		title: book.title as string,
+		author: book.author as string,
+		publisher: book.publisher as string,
+		imgUrl: book.img_url as string | null
+	};
+};
+
+const getFromISSAPI = async (isbn: string) => {
+	const issImgUrl = `https://iss.ndl.go.jp/thumbnail/${isbn}`;
+
+	const [res, imgRes] = await Promise.all([
+		fetch(
+			`https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn=${isbn}&maximumRecords=1`
+		),
+		fetch(issImgUrl)
+	]);
+
+	const parser = new XMLParser();
+	const xml = parser.parse(await res.text());
+
+	let record = xml?.searchRetrieveResponse?.records?.record?.recordData;
+	if (!record) return null;
+
+	record = parser.parse(record)?.['srw_dc:dc'];
+	if (!record) return null;
+
+	let title = record['dc:title'] as string | string[];
+	if (Array.isArray(title)) {
+		title = title.join(', ');
+	}
+
+	let author = record['dc:creator'] as string | string[];
+	if (Array.isArray(author)) {
+		author = author.join(', ');
+	}
+
+	let publisher = record['dc:publisher'] as string | string[];
+	if (Array.isArray(publisher)) {
+		publisher = publisher.join(', ');
+	}
+
+	const imgUrl = imgRes.ok ? (issImgUrl as string) : null;
+
+	return { title, author, publisher, imgUrl };
+};
+
+const getFromGoogleBooksAPI = async (isbn: string) => {
+	const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+	const json = await res.json();
+	if (json.totalItems === 0) return null;
+
+	const item = json.items[0];
+	const title = item.volumeInfo.title as string;
+	const author = item.volumeInfo.authors?.join(', ') as string;
+	const publisher = item.volumeInfo.publisher as string;
+	const imgUrl: string | null = item.volumeInfo.imageLinks?.thumbnail;
+
+	return { title, author, publisher, imgUrl };
+};
+
+const getFromOpenLibraryAPI = async (isbn: string) => {
+	const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+	const json = await res.json();
+	if (!json) return null;
+
+	const title = json.title as string;
+	const authorPromises = (json.authors as { key: string }[])?.map(async (author) => {
+		const res = await fetch(`https://openlibrary.org${author.key}.json`);
+		const json = await res.json();
+		return json.name;
+	});
+	const publisher = json.publishers?.join(', ') as string;
+	const imgUrl = json.covers ? `https://covers.openlibrary.org/b/id/${json.covers[0]}-M.jpg` : null;
+
+	return {
+		title,
+		author: (await Promise.all(authorPromises)).join(', '),
+		publisher,
+		imgUrl
+	};
+};
 
 export async function DELETE({
 	params,
