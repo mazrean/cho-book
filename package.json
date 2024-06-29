@@ -3,7 +3,8 @@
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "wrangler dev",
-		"deploy": "wrangler publish",
+		"deploy": "wrangler deploy",
+		"deploy:prod": "wrangler deploy --env prod",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

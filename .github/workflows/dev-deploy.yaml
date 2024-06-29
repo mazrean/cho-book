@@ -1,0 +1,37 @@
+name: Deploy(dev)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - labeled
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    environment:
+      name: development
+      url: https://cho-book-dev.mazrean.com
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.action, 'labeled') && github.event.label.name == 'deploy')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+      - run: npm ci
+      - run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
