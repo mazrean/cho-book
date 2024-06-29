@@ -13,6 +13,11 @@ on:
 
 env:
   NODE_VERSION: '22'
+  # ビルド、型チェックの確認用の仮の値。実際に使われる値は、GitHub Actions の Secrets に設定されている。
+  AUTH_SECRET: 'auth_secret'
+  GOOGLE_CLIENT_ID: 'google_client_id'
+  GOOGLE_CLIENT_SECRET: 'google_client_secret'
+  RAKUTEN_APP_ID: 'rakuten_app_id'
 
 permissions:
   checks: write
@@ -67,7 +72,7 @@ jobs:
           fail_on_error: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          eslint_flags: "--ignore-path .gitignore --max-warnings=0 --cache --cache-location ./node_modules/.cache/eslint ."
+          eslint_flags: '--ignore-path .gitignore --max-warnings=0 --cache --cache-location ./node_modules/.cache/eslint .'
   type_check:
     name: Type Check
     runs-on: ubuntu-latest
