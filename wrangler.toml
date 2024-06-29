@@ -7,8 +7,13 @@ compatibility_date = "2023-07-17"
 
 build.command = "npm run build"
 
-[[ d1_databases ]]
+[[d1_databases]]
+binding = "DB"
+database_name = "cho-book-dev"
+database_id = "4c4d6f03-17e8-40fd-9e9e-264bce2300bd"
+
+[env.prod]
+[[ env.prod.d1_databases ]]
 binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "cho_book"
-database_id = "7f3bf433-8767-4415-aa46-291ff52e611e"
-preview_database_id = "99e32dc4-e103-4e4b-b25d-46e5a39e82f4"
+database_name = "cho-book"
+database_id = "fcc7c1e2-49cc-452b-aaa4-dcfb236f4473"
