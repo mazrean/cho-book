@@ -7,7 +7,7 @@ export async function GET({
 }: RequestEvent<{ isbn: string }>): Promise<Response> {
 	const isbn = params.isbn;
 
-	const session = await locals.getSession();
+	const session = await locals.auth();
 	if (!session) {
 		return new Response(null, { status: 401 });
 	}

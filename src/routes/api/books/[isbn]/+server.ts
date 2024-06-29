@@ -193,7 +193,7 @@ export async function DELETE({
 	locals,
 	platform
 }: RequestEvent<{ isbn: string }>): Promise<Response> {
-	const session = await locals.getSession();
+	const session = await locals.auth();
 	if (!session) {
 		return new Response(null, { status: 401 });
 	}

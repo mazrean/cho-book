@@ -58,7 +58,7 @@
             return;
         }
 
-        books = [...books, {book, isOwn}];
+        books = [{book, isOwn}, ...books];
 
         if (isOwn) {
             hasDuplicate = true;
