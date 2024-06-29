@@ -17,7 +17,7 @@
 		"@fontsource/fira-mono": "^5.0.13",
 		"@neoconfetti/svelte": "^2.2.1",
 		"@sveltejs/kit": "^2.5.17",
-		"@sveltejs/vite-plugin-svelte": "^3.1.0",
+		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@types/cookie": "^0.6.0",
 		"@types/node": "^20.12.11",
 		"@types/uikit": "^3.14.5",
@@ -28,10 +28,10 @@
 		"eslint-plugin-svelte": "^2.41.0",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.5",
-		"sass": "^1.77.2",
+		"sass": "^1.77.6",
 		"svelte": "^4.2.18",
 		"svelte-check": "^3.7.1",
-		"tslib": "^2.6.2",
+		"tslib": "^2.6.3",
 		"typescript": "^5.5.2",
 		"vite": "^5.2.11",
 		"wrangler": "^3.62.0"
@@ -40,8 +40,8 @@
 	"dependencies": {
 		"@auth/core": "^0.34.1",
 		"@auth/sveltekit": "^1.0.1",
-		"@sveltejs/adapter-cloudflare-workers": "^2.4.0",
-		"@zxing/browser": "^0.1.4",
+		"@sveltejs/adapter-cloudflare-workers": "^2.4.1",
+		"@zxing/browser": "^0.1.5",
 		"fast-xml-parser": "^4.4.0",
 		"uikit": "^3.21.5"
 	}
