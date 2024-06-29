@@ -1,7 +1,7 @@
 import type { Book } from '/@/lib/types/book';
 
 export async function POST({ locals, platform, request }) {
-	const session = await locals.getSession();
+	const session = await locals.auth();
 	if (!session) {
 		return new Response(null, { status: 401 });
 	}
@@ -40,7 +40,7 @@ export async function POST({ locals, platform, request }) {
 }
 
 export async function GET({ locals, platform, url }) {
-	const session = await locals.getSession();
+	const session = await locals.auth();
 	if (!session) {
 		return new Response(null, { status: 401 });
 	}
