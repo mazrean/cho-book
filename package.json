@@ -33,7 +33,7 @@
 		"svelte-check": "^3.7.1",
 		"tslib": "^2.6.3",
 		"typescript": "^5.5.4",
-		"vite": "^5.2.11",
+		"vite": "^5.3.5",
 		"wrangler": "^3.63.1"
 	},
 	"type": "module",
