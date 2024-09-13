@@ -16,8 +16,8 @@
 		"@cloudflare/workers-types": "^4.20240502.0",
 		"@fontsource/fira-mono": "^5.0.13",
 		"@neoconfetti/svelte": "^2.2.1",
-		"@sveltejs/kit": "^2.5.19",
-		"@sveltejs/vite-plugin-svelte": "^3.1.1",
+		"@sveltejs/kit": "^2.5.26",
+		"@sveltejs/vite-plugin-svelte": "^3.1.2",
 		"@types/cookie": "^0.6.0",
 		"@types/node": "^20.14.9",
 		"@types/uikit": "^3.14.5",
@@ -29,7 +29,7 @@
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
 		"sass": "^1.77.8",
-		"svelte": "^4.2.18",
+		"svelte": "^4.2.19",
 		"svelte-check": "^3.7.1",
 		"tslib": "^2.6.3",
 		"typescript": "^5.5.4",
@@ -40,9 +40,9 @@
 	"dependencies": {
 		"@auth/core": "^0.34.2",
 		"@auth/sveltekit": "^1.4.2",
-		"@sveltejs/adapter-cloudflare-workers": "^2.5.2",
+		"@sveltejs/adapter-cloudflare-workers": "^2.5.4",
 		"@zxing/browser": "^0.1.5",
 		"fast-xml-parser": "^4.4.1",
-		"uikit": "^3.21.9"
+		"uikit": "^3.21.12"
 	}
 }
