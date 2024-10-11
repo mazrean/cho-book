@@ -13,7 +13,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240502.0",
+		"@cloudflare/workers-types": "^4.20240806.0",
 		"@fontsource/fira-mono": "^5.0.13",
 		"@neoconfetti/svelte": "^2.2.1",
 		"@sveltejs/kit": "^2.5.19",
