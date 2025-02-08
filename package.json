@@ -19,7 +19,7 @@
 		"@fontsource/fira-mono": "^5.0.13",
 		"@neoconfetti/svelte": "^2.2.1",
 		"@sveltejs/kit": "^2.16.0",
-		"@sveltejs/vite-plugin-svelte": "^3.1.2",
+		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/cookie": "^1.0.0",
 		"@types/node": "^22.13.1",
 		"@types/uikit": "^3.14.5",
