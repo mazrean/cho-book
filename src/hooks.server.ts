@@ -5,5 +5,6 @@ import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET } from '$env/static
 export const { handle } = SvelteKitAuth({
 	providers: [Google({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET })],
 	secret: AUTH_SECRET,
-	trustHost: true
+	trustHost: true,
+	basePath: '/auth'
 });
