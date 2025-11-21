@@ -16,7 +16,7 @@ jobs:
       name: production
       url: https://cho-book.mazrean.com
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
